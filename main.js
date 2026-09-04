@@ -1,13 +1,655 @@
-const KEY='zenji_cart', money=v=>`A$${Number(v).toFixed(2)}`, cart=()=>JSON.parse(localStorage.getItem(KEY)||'[]'), save=c=>{localStorage.setItem(KEY,JSON.stringify(c));count()};
-function count(){const e=document.getElementById('bag-count');if(e)e.textContent=cart().reduce((a,x)=>a+x.qty,0)}
-function header(){const e=document.getElementById('site-header');if(!e)return;e.innerHTML=`<header class="site-header"><a class="logo" href="index.html">ZENJI<sup>®</sup></a><nav><a href="shop.html">Shop</a><a href="story.html">Our Story</a><a href="lookbook.html">Lookbook</a><a href="faq.html">FAQ</a></nav><a class="bag" href="cart.html">Bag <b id="bag-count">0</b></a><button class="menu" aria-label="Menu"><i></i><i></i></button></header><div class="mobile-nav"><a href="shop.html">Shop</a><a href="story.html">Our Story</a><a href="lookbook.html">Lookbook</a><a href="faq.html">FAQ</a></div>`;const b=e.querySelector('.menu'),m=document.querySelector('.mobile-nav');b.onclick=()=>m.classList.toggle('open')}
-function footer(){const e=document.getElementById('site-footer');if(!e)return;e.innerHTML=`<footer><div class="footer-top"><div><a class="logo" href="index.html">ZENJI<sup>®</sup></a><p>ANIME STREETWEAR<br>FOR THE EVERYDAY WARRIOR.</p></div><div class="footer-links"><a href="shop.html">Shop</a><a href="story.html">Our Story</a><a href="lookbook.html">Lookbook</a><a href="faq.html">FAQ</a></div><div><p class="eyebrow">FOLLOW THE JOURNEY</p><a href="https://www.instagram.com/zenji.shop/" target="_blank">INSTAGRAM ↗</a></div></div><div class="footer-bottom">© 2026 ZENJI. ALL RIGHTS RESERVED. <span>MELBOURNE / AUSTRALIA</span></div></footer>`}
-function card(p){return `<article class="card reveal"><a class="pic" href="product.html?id=${p.id}"><span>${p.tag}</span><img src="${p.images[0]}" alt="${p.name}" loading="lazy"><b>VIEW PRODUCT ↗</b></a><div class="info"><a href="product.html?id=${p.id}"><strong>${p.name}</strong><small>${p.category.toUpperCase()} / ZENJI</small></a><strong>${money(p.price)}</strong></div></article>`}
-function featured(){const e=document.getElementById('featured-products');if(e)e.innerHTML=PRODUCTS.slice(0,4).map(card).join('')}
-function shop(){const e=document.getElementById('shop-products');if(!e)return;let f=new URLSearchParams(location.search).get('category')||'all';const s=document.getElementById('search-input');const paint=()=>{const q=(s.value||'').toLowerCase();const list=PRODUCTS.filter(p=>(f==='all'||p.category===f)&&p.name.toLowerCase().includes(q));e.innerHTML=list.map(card).join('');document.getElementById('empty-results').hidden=!!list.length;reveal()};document.querySelectorAll('.filter').forEach(x=>x.onclick=()=>{f=x.dataset.filter;document.querySelectorAll('.filter').forEach(y=>y.classList.remove('active'));x.classList.add('active');paint()});s.oninput=paint;document.querySelectorAll('.filter').forEach(x=>x.classList.toggle('active',x.dataset.filter===f));paint()}
-function add(id,size,qty){const c=cart(),x=c.find(i=>i.id===id&&i.size===size);x?x.qty+=qty:c.push({id,size,qty});save(c);toast('ADDED TO BAG ↗')}
-function toast(t){let e=document.querySelector('.toast');if(!e){e=document.createElement('div');e.className='toast';document.body.appendChild(e)}e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1600)}
-function product(){const e=document.getElementById('product-page');if(!e)return;const p=PRODUCTS.find(x=>x.id===new URLSearchParams(location.search).get('id'))||PRODUCTS[0];e.innerHTML=`<section class="product-layout"><div class="gallery"><div class="thumbs">${p.images.map((im,i)=>`<button class="thumb ${i?'':'active'}" data-src="${im}"><img src="${im}" alt=""></button>`).join('')}</div><div class="main-img"><img id="main-img" src="${p.images[0]}" alt="${p.name}"></div></div><div class="details"><p class="eyebrow">${p.category.toUpperCase()} / ${p.drop.toUpperCase()}</p><h1>${p.name}</h1><div class="price">${money(p.price)}</div><p class="desc">${p.desc}</p><label>SELECT SIZE</label><div class="sizes">${['XS','S','M','L','XL','XXL'].map(s=>`<button class="size ${s==='L'?'active':''}" data-size="${s}">${s}</button>`).join('')}</div><div class="buy"><div class="qty"><button id="minus">−</button><span id="qty">1</span><button id="plus">+</button></div><button class="btn dark" id="add">ADD TO BAG ↗</button></div><div class="spec"><p><b>FIT</b><span>${p.fit}</span></p><p><b>FABRIC</b><span>${p.fabric}</span></p><p><b>DROP</b><span>${p.drop}</span></p></div></div></section><section class="section related"><h2>YOU MAY ALSO <em>LIKE.</em></h2><div class="product-grid">${PRODUCTS.filter(x=>x.id!==p.id).slice(0,4).map(card).join('')}</div></section>`;let q=1,size='L';document.querySelectorAll('.size').forEach(x=>x.onclick=()=>{document.querySelectorAll('.size').forEach(y=>y.classList.remove('active'));x.classList.add('active');size=x.dataset.size});document.getElementById('minus').onclick=()=>{q=Math.max(1,q-1);document.getElementById('qty').textContent=q};document.getElementById('plus').onclick=()=>{q++;document.getElementById('qty').textContent=q};document.getElementById('add').onclick=()=>add(p.id,size,q);document.querySelectorAll('.thumb').forEach(x=>x.onclick=()=>{document.querySelectorAll('.thumb').forEach(y=>y.classList.remove('active'));x.classList.add('active');document.getElementById('main-img').src=x.dataset.src})}
-function cartPage(){const e=document.getElementById('cart-content');if(!e)return;const c=cart();if(!c.length){e.innerHTML=`<div class="empty-cart"><h2>YOUR BAG IS EMPTY.</h2><a class="btn dark" href="shop.html">CONTINUE SHOPPING ↗</a></div>`;return}let total=0;e.innerHTML=`<div class="cart-wrap">${c.map((x,i)=>{const p=PRODUCTS.find(y=>y.id===x.id),t=p.price*x.qty;total+=t;return `<div class="cart-item"><img src="${p.images[0]}" alt=""><div><h3>${p.name}</h3><small>SIZE ${x.size}</small></div><div class="cart-actions"><button data-a="dec" data-i="${i}">−</button>${x.qty}<button data-a="inc" data-i="${i}">+</button><button data-a="remove" data-i="${i}">×</button></div><strong>${money(t)}</strong></div>`}).join('')}<div class="cart-total"><span>SUBTOTAL</span><strong>${money(total)}</strong><button class="btn dark" id="checkout">CHECKOUT ↗</button><small>Demo checkout — no payment is processed.</small></div></div>`;e.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,c=cart();if(b.dataset.a==='inc')c[i].qty++;if(b.dataset.a==='dec')c[i].qty=Math.max(1,c[i].qty-1);if(b.dataset.a==='remove')c.splice(i,1);save(c);cartPage()});document.getElementById('checkout').onclick=()=>toast('DEMO CHECKOUT — NO PAYMENT')}
-function reveal(){document.querySelectorAll('.reveal').forEach(e=>{if(e.getBoundingClientRect().top<innerHeight*.9)e.classList.add('visible')})}
-header();footer();count();featured();shop();product();cartPage();addEventListener('scroll',reveal);reveal();
+const KEY = 'zenji_cart';
+
+const money = (value) => `A$${Number(value).toFixed(2)}`;
+
+const cart = () => {
+  try {
+    return JSON.parse(localStorage.getItem(KEY) || '[]');
+  } catch (error) {
+    console.error('Cart data is corrupted:', error);
+    return [];
+  }
+};
+
+const save = (items) => {
+  localStorage.setItem(KEY, JSON.stringify(items));
+  count();
+};
+
+function count() {
+  const element = document.getElementById('bag-count');
+
+  if (element) {
+    element.textContent = cart().reduce(
+      (total, item) => total + Number(item.qty || 0),
+      0
+    );
+  }
+}
+
+function header() {
+  const element = document.getElementById('site-header');
+
+  if (!element) return;
+
+  element.innerHTML = `
+    <header class="site-header">
+      <a class="logo" href="index.html">
+        ZENJI<sup>®</sup>
+      </a>
+
+      <nav>
+        <a href="shop.html">Shop</a>
+        <a href="story.html">Our Story</a>
+        <a href="lookbook.html">Lookbook</a>
+        <a href="faq.html">FAQ</a>
+      </nav>
+
+      <a class="bag" href="cart.html">
+        Bag <b id="bag-count">0</b>
+      </a>
+
+      <button class="menu" aria-label="Menu" type="button">
+        <i></i>
+        <i></i>
+      </button>
+    </header>
+
+    <div class="mobile-nav">
+      <a href="shop.html">Shop</a>
+      <a href="story.html">Our Story</a>
+      <a href="lookbook.html">Lookbook</a>
+      <a href="faq.html">FAQ</a>
+    </div>
+  `;
+
+  const menuButton = element.querySelector('.menu');
+  const mobileNav = document.querySelector('.mobile-nav');
+
+  if (menuButton && mobileNav) {
+    menuButton.onclick = () => {
+      mobileNav.classList.toggle('open');
+    };
+  }
+}
+
+function footer() {
+  const element = document.getElementById('site-footer');
+
+  if (!element) return;
+
+  element.innerHTML = `
+    <footer>
+      <div class="footer-top">
+
+        <div>
+          <a class="logo" href="index.html">
+            ZENJI<sup>®</sup>
+          </a>
+
+          <p>
+            ANIME STREETWEAR<br>
+            FOR THE EVERYDAY WARRIOR.
+          </p>
+        </div>
+
+        <div class="footer-links">
+          <a href="shop.html">Shop</a>
+          <a href="story.html">Our Story</a>
+          <a href="lookbook.html">Lookbook</a>
+          <a href="faq.html">FAQ</a>
+        </div>
+
+        <div>
+          <p class="eyebrow">FOLLOW THE JOURNEY</p>
+
+          <a
+            href="https://www.instagram.com/zenji.shop/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            INSTAGRAM ↗
+          </a>
+        </div>
+
+      </div>
+
+      <div class="footer-bottom">
+        © 2026 ZENJI. ALL RIGHTS RESERVED.
+        <span>MELBOURNE / AUSTRALIA</span>
+      </div>
+    </footer>
+  `;
+}
+
+function card(product) {
+  return `
+    <article class="card reveal">
+
+      <a
+        class="pic"
+        href="product.html?id=${product.id}"
+      >
+        <span>${product.tag}</span>
+
+        <img
+          src="${product.images[0]}"
+          alt="${product.name}"
+          loading="lazy"
+        >
+
+        <b>VIEW PRODUCT ↗</b>
+      </a>
+
+      <div class="info">
+
+        <a href="product.html?id=${product.id}">
+          <strong>${product.name}</strong>
+          <small>
+            ${product.category.toUpperCase()} / ZENJI
+          </small>
+        </a>
+
+        <strong>
+          ${money(product.price)}
+        </strong>
+
+      </div>
+
+    </article>
+  `;
+}
+
+function featured() {
+  const element = document.getElementById('featured-products');
+
+  if (!element || typeof PRODUCTS === 'undefined') return;
+
+  element.innerHTML = PRODUCTS
+    .slice(0, 4)
+    .map(card)
+    .join('');
+}
+
+function shop() {
+  const element = document.getElementById('shop-products');
+
+  if (!element || typeof PRODUCTS === 'undefined') return;
+
+  let filter =
+    new URLSearchParams(location.search).get('category') || 'all';
+
+  const searchInput = document.getElementById('search-input');
+  const emptyResults = document.getElementById('empty-results');
+
+  const paint = () => {
+    const query = (searchInput?.value || '').toLowerCase().trim();
+
+    const list = PRODUCTS.filter((product) => {
+      const matchesCategory =
+        filter === 'all' || product.category === filter;
+
+      const matchesSearch =
+        product.name.toLowerCase().includes(query);
+
+      return matchesCategory && matchesSearch;
+    });
+
+    element.innerHTML = list
+      .map(card)
+      .join('');
+
+    if (emptyResults) {
+      emptyResults.hidden = list.length > 0;
+    }
+
+    reveal();
+  };
+
+  document.querySelectorAll('.filter').forEach((button) => {
+    button.onclick = () => {
+      filter = button.dataset.filter || 'all';
+
+      document
+        .querySelectorAll('.filter')
+        .forEach((item) => item.classList.remove('active'));
+
+      button.classList.add('active');
+
+      paint();
+    };
+  });
+
+  if (searchInput) {
+    searchInput.oninput = paint;
+  }
+
+  document.querySelectorAll('.filter').forEach((button) => {
+    button.classList.toggle(
+      'active',
+      button.dataset.filter === filter
+    );
+  });
+
+  paint();
+}
+
+function add(id, size, quantity) {
+  const items = cart();
+
+  const existing = items.find(
+    (item) => item.id === id && item.size === size
+  );
+
+  if (existing) {
+    existing.qty += quantity;
+  } else {
+    items.push({
+      id,
+      size,
+      qty: quantity
+    });
+  }
+
+  save(items);
+
+  toast('ADDED TO BAG ↗');
+}
+
+function toast(message) {
+  let element = document.querySelector('.toast');
+
+  if (!element) {
+    element = document.createElement('div');
+    element.className = 'toast';
+    document.body.appendChild(element);
+  }
+
+  element.textContent = message;
+
+  element.classList.add('show');
+
+  setTimeout(() => {
+    element.classList.remove('show');
+  }, 1600);
+}
+
+function product() {
+  const element = document.getElementById('product-page');
+
+  if (!element || typeof PRODUCTS === 'undefined') return;
+
+  const id =
+    new URLSearchParams(location.search).get('id');
+
+  const product =
+    PRODUCTS.find((item) => item.id === id) || PRODUCTS[0];
+
+  element.innerHTML = `
+    <section class="product-layout">
+
+      <div class="gallery">
+
+        <div class="thumbs">
+          ${product.images
+            .map(
+              (image, index) => `
+                <button
+                  class="thumb ${index === 0 ? 'active' : ''}"
+                  data-src="${image}"
+                  type="button"
+                >
+                  <img src="${image}" alt="">
+                </button>
+              `
+            )
+            .join('')}
+        </div>
+
+        <div class="main-img">
+          <img
+            id="main-img"
+            src="${product.images[0]}"
+            alt="${product.name}"
+          >
+        </div>
+
+      </div>
+
+      <div class="details">
+
+        <p class="eyebrow">
+          ${product.category.toUpperCase()}
+          /
+          ${product.drop.toUpperCase()}
+        </p>
+
+        <h1>${product.name}</h1>
+
+        <div class="price">
+          ${money(product.price)}
+        </div>
+
+        <p class="desc">
+          ${product.desc}
+        </p>
+
+        <label>SELECT SIZE</label>
+
+        <div class="sizes">
+          ${['XS', 'S', 'M', 'L', 'XL', 'XXL']
+            .map(
+              (size) => `
+                <button
+                  class="size ${size === 'L' ? 'active' : ''}"
+                  data-size="${size}"
+                  type="button"
+                >
+                  ${size}
+                </button>
+              `
+            )
+            .join('')}
+        </div>
+
+        <div class="buy">
+
+          <div class="qty">
+            <button id="minus" type="button">−</button>
+            <span id="qty">1</span>
+            <button id="plus" type="button">+</button>
+          </div>
+
+          <button
+            class="btn dark"
+            id="add"
+            type="button"
+          >
+            ADD TO BAG ↗
+          </button>
+
+        </div>
+
+        <div class="spec">
+
+          <p>
+            <b>FIT</b>
+            <span>${product.fit}</span>
+          </p>
+
+          <p>
+            <b>FABRIC</b>
+            <span>${product.fabric}</span>
+          </p>
+
+          <p>
+            <b>DROP</b>
+            <span>${product.drop}</span>
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="section related">
+
+      <h2>
+        YOU MAY ALSO <em>LIKE.</em>
+      </h2>
+
+      <div class="product-grid">
+        ${PRODUCTS
+          .filter((item) => item.id !== product.id)
+          .slice(0, 4)
+          .map(card)
+          .join('')}
+      </div>
+
+    </section>
+  `;
+
+  let quantity = 1;
+  let selectedSize = 'L';
+
+  document.querySelectorAll('.size').forEach((button) => {
+    button.onclick = () => {
+      document
+        .querySelectorAll('.size')
+        .forEach((item) => item.classList.remove('active'));
+
+      button.classList.add('active');
+
+      selectedSize = button.dataset.size;
+    };
+  });
+
+  const minus = document.getElementById('minus');
+  const plus = document.getElementById('plus');
+  const quantityElement = document.getElementById('qty');
+  const addButton = document.getElementById('add');
+
+  if (minus) {
+    minus.onclick = () => {
+      quantity = Math.max(1, quantity - 1);
+      quantityElement.textContent = quantity;
+    };
+  }
+
+  if (plus) {
+    plus.onclick = () => {
+      quantity++;
+      quantityElement.textContent = quantity;
+    };
+  }
+
+  if (addButton) {
+    addButton.onclick = () => {
+      add(product.id, selectedSize, quantity);
+    };
+  }
+
+  document.querySelectorAll('.thumb').forEach((thumb) => {
+    thumb.onclick = () => {
+      document
+        .querySelectorAll('.thumb')
+        .forEach((item) => item.classList.remove('active'));
+
+      thumb.classList.add('active');
+
+      const mainImage = document.getElementById('main-img');
+
+      if (mainImage) {
+        mainImage.src = thumb.dataset.src;
+      }
+    };
+  });
+}
+
+function cartPage() {
+  const element = document.getElementById('cart-content');
+
+  if (!element || typeof PRODUCTS === 'undefined') return;
+
+  const items = cart();
+
+  if (!items.length) {
+    element.innerHTML = `
+      <div class="empty-cart">
+
+        <h2>
+          YOUR BAG IS EMPTY.
+        </h2>
+
+        <a
+          class="btn dark"
+          href="shop.html"
+        >
+          CONTINUE SHOPPING ↗
+        </a>
+
+      </div>
+    `;
+
+    return;
+  }
+
+  let total = 0;
+
+  element.innerHTML = `
+    <div class="cart-wrap">
+
+      ${items
+        .map((item, index) => {
+
+          const product =
+            PRODUCTS.find((p) => p.id === item.id);
+
+          if (!product) return '';
+
+          const itemTotal =
+            product.price * item.qty;
+
+          total += itemTotal;
+
+          return `
+            <div class="cart-item">
+
+              <img
+                src="${product.images[0]}"
+                alt="${product.name}"
+              >
+
+              <div>
+                <h3>${product.name}</h3>
+                <small>SIZE ${item.size}</small>
+              </div>
+
+              <div class="cart-actions">
+
+                <button
+                  data-a="dec"
+                  data-i="${index}"
+                  type="button"
+                >
+                  −
+                </button>
+
+                ${item.qty}
+
+                <button
+                  data-a="inc"
+                  data-i="${index}"
+                  type="button"
+                >
+                  +
+                </button>
+
+                <button
+                  data-a="remove"
+                  data-i="${index}"
+                  type="button"
+                >
+                  ×
+                </button>
+
+              </div>
+
+              <strong>
+                ${money(itemTotal)}
+              </strong>
+
+            </div>
+          `;
+        })
+        .join('')}
+
+      <div class="cart-total">
+
+        <span>SUBTOTAL</span>
+
+        <strong>
+          ${money(total)}
+        </strong>
+
+        <button
+          class="btn dark"
+          id="checkout"
+          type="button"
+        >
+          CHECKOUT ↗
+        </button>
+
+        <small>
+          Demo checkout — no payment is processed.
+        </small>
+
+      </div>
+
+    </div>
+  `;
+
+  element.querySelectorAll('[data-a]').forEach((button) => {
+
+    button.onclick = () => {
+
+      const index = Number(button.dataset.i);
+      const items = cart();
+
+      if (!items[index]) return;
+
+      if (button.dataset.a === 'inc') {
+        items[index].qty++;
+      }
+
+      if (button.dataset.a === 'dec') {
+        items[index].qty =
+          Math.max(1, items[index].qty - 1);
+      }
+
+      if (button.dataset.a === 'remove') {
+        items.splice(index, 1);
+      }
+
+      save(items);
+      cartPage();
+    };
+
+  });
+
+  const checkout = document.getElementById('checkout');
+
+  if (checkout) {
+    checkout.onclick = () => {
+      toast('DEMO CHECKOUT — NO PAYMENT');
+    };
+  }
+}
+
+function reveal() {
+  document
+    .querySelectorAll('.reveal')
+    .forEach((element) => {
+
+      if (
+        element.getBoundingClientRect().top <
+        window.innerHeight * 0.9
+      ) {
+        element.classList.add('visible');
+      }
+
+    });
+}
+
+header();
+footer();
+count();
+featured();
+shop();
+product();
+cartPage();
+
+window.addEventListener('scroll', reveal);
+
+reveal();
